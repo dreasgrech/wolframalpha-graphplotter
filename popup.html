@@ -41,7 +41,8 @@
 			</div>
 		</div>
 
-		<input type="submit" id='ready' value="Go" />
+		<input type="submit" id='ready' value="Go" style="float:right" />
+		<input type="button" id='clear' value="Clear" style="float:left" />
 	</form>
 </div>
 
@@ -158,6 +159,17 @@
 			document.getElementById(axis + "RangeFrom").value = localStorage[axis + "RangeFrom"] || "";
 			document.getElementById(axis + "RangeTo").value = localStorage[axis + "RangeTo"] || "";
 		});
+	}, clear = function () {
+		axes.iterate(function(axis) {
+			document.getElementById(axis + "RangeFrom").value = "";
+			document.getElementById(axis + "RangeTo").value = "";
+		});
+		toArray(document.getElementsByClassName('function')).iterate(function (f) {
+			functionsHolder.removeChild(f.parentNode);
+		});
+
+		addFunction();
+		saveData();
 	};
 
 	document.getElementById('ready').onclick = ready;
@@ -169,6 +181,8 @@
 	toArray(document.getElementsByTagName("input")).iterate(function (input) {
 		input.onkeyup = saveData;
 	});
+
+	document.getElementById('clear').onclick = clear;
 
 	loadData();
 </script>
