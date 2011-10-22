@@ -1,0 +1,11 @@
+{
+  "name": "Wolfram|Alpha Graph Plotter",
+  "version": "1.0",
+  "description": "Plot graphs using Wolfram|Alpha",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "popup": "popup.html"
+  },
+  "permissions": []
+}
+

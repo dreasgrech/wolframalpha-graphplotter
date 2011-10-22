@@ -1,0 +1,174 @@
+<style>
+	html {
+		height: 300px;
+	}
+
+	h2 {
+		font-size: 18px;
+	}
+
+	#container {
+		margin:10px;
+	}
+
+	.function {
+		width: 300px;
+	}
+	.range {
+		width: 50px;
+	}
+</style>
+
+<div id="container">
+	<form id="form" method="get">
+		<div id="functions">
+			<h2>Functions</h2>
+		</div>
+		<input type="button" id='addFunction' value="Add function" />
+		<div id="types">
+			<h2>Type</h2>
+			<input id="function" type="radio" name="type" value="" checked/><label for="function">Function</label>
+			<input id="polar" type="radio" name="type" value="polar"/><label for="polar">Polar</label>
+			<input id="parametric" type="radio" name="type" value="parametric"/><label for="parametric">Parametric</label>
+		</div>
+		<div id="ranges">
+			<h2>Ranges</h2>
+			<div>
+				X <input type="text" id="xRangeFrom" class="range"/> <input type="text" id="xRangeTo" class="range"/>
+			</div>
+			<div>
+				Y <input type="text" id="yRangeFrom" class="range"/> <input type="text" id="yRangeTo" class="range"/>
+			</div>
+		</div>
+
+		<input type="submit" id='ready' value="Go" />
+	</form>
+</div>
+
+<script>
+	Array.prototype.iterate || (Array.prototype.iterate = function (callback, ignore) {
+	  var i = 0, j = this.length;
+	    for (; i < j; ++i) {
+		if (ignore && ignore(this[i], i)) {
+		  continue;
+		} 
+		
+		callback(this[i], i);
+	    }
+	});
+
+	var mainUrl = "http://www.wolframalpha.com/input/?i=",
+	axes = ["x", "y"],
+	toArray = function (el) {
+		return Array.prototype.slice.call(el);
+	},
+	typesHolder = document.getElementById('types'),
+	functionsHolder = document.getElementById('functions'),
+	addFunction = function (f) {
+		var holder = document.createElement('div'), input = document.createElement('input');
+		input.classList.add("function");
+		input.type = "text";
+		input.onkeyup = saveData;
+		if (f) {
+			input.value = f;
+		}
+
+		holder.appendChild(input);
+		functions.appendChild(holder);
+		input.focus();
+	}, getType = function () {
+		var selectedType;
+		toArray(typesHolder.getElementsByTagName("input")).iterate(function (radio) {
+			if (radio.checked) {
+				selectedType = radio.value
+			}
+		});
+		return selectedType;
+	}, getFunctions = function () {
+		var functions = [];
+		toArray(functionsHolder.childNodes).iterate(function(functionHolder) {
+			var value;
+			if (functionHolder.nodeName !== "DIV") {
+				return;
+			}
+			value = functionHolder.getElementsByTagName("input")[0].value;
+			if (value) {
+				functions.push(value);
+			}
+		});
+
+		return functions;
+	}, getRanges = function () {
+		var ranges = {}, limits = ["From", "To"];
+		axes.iterate(function (axis) {
+			var axisLimits = {};
+			limits.iterate(function (limit) {
+				var inputtedAxisLimit = document.getElementById(axis + "Range" + limit);
+				axisLimits[limit] = inputtedAxisLimit.value || "";
+			});
+
+			if (axisLimits["From"] && axisLimits["To"]) {
+				ranges[axis] = axisLimits;
+				ranges[axis].serialize = function () {
+					return "{" + axis + ", " + axisLimits["From"] + ", " + axisLimits["To"] + "}";
+				};
+			}
+		});
+		return ranges;
+	}, constructUrl = function (functions, ranges) {
+		var plotParameter = "Plot[", 
+		serializedFunctions = functions.join(", "),
+		serializedRanges = [];
+
+		axes.iterate(function (axis) {
+			if (!ranges[axis]) {
+				return;
+			}
+			serializedRanges.push(ranges[axis].serialize());
+		});
+		serializedRanges = serializedRanges.join(", ");
+
+		return mainUrl + encodeURIComponent(getType() + " Plot[" + serializedFunctions + (serializedRanges ? ", " + serializedRanges : "") + "]");
+	}, ready = function (e) {
+		e.preventDefault();
+		var functions = getFunctions(), ranges = getRanges(), fullUrl;
+		if (!functions.length) {
+			return;
+		}
+		fullUrl = constructUrl(functions, ranges);
+
+		chrome.tabs.create({'url': fullUrl}, function(tab) { });
+	}, saveData = function () {
+		var ranges = getRanges();
+		localStorage["functions"] = getFunctions().join("#-#");
+		axes.iterate(function (axis) {
+			localStorage[axis + "RangeFrom"] = document.getElementById(axis + "RangeFrom").value;
+			localStorage[axis + "RangeTo"] = document.getElementById(axis + "RangeTo").value;
+		});
+	}, loadData = function () {
+		var functions = localStorage["functions"];
+		if (functions) {
+			functions.split("#-#").iterate(function (f) {
+				addFunction(f);
+			});
+		} else { // if there are no saved functions, just add an empty first one
+			addFunction();
+		}
+		axes.iterate(function (axis) {
+			document.getElementById(axis + "RangeFrom").value = localStorage[axis + "RangeFrom"] || "";
+			document.getElementById(axis + "RangeTo").value = localStorage[axis + "RangeTo"] || "";
+		});
+	};
+
+	document.getElementById('ready').onclick = ready;
+
+	document.getElementById('addFunction').onclick = function () {
+		addFunction();
+	};
+
+	toArray(document.getElementsByTagName("input")).iterate(function (input) {
+		input.onkeyup = saveData;
+	});
+
+	loadData();
+</script>
