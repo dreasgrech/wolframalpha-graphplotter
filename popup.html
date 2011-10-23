@@ -5,6 +5,8 @@
 
 	h2 {
 		font-size: 18px;
+		margin:0px;
+		margin-bottom:10px;
 	}
 
 	#container {
@@ -15,30 +17,49 @@
 		width: 300px;
 	}
 	.range {
-		width: 50px;
+		width: 80px;
+	}
+	.holder {
+		width: 300px;
+		border:1px solid #CCC;
+		border-radius: 15px;
+		padding:10px;
+		margin:10px;
 	}
 </style>
 
 <div id="container">
 	<form id="form" method="get">
-		<div id="functions">
+		<div id="functions" class="holder">
 			<h2>Functions</h2>
 		</div>
 		<input type="button" id='addFunction' value="Add function" />
-		<div id="types">
+		<div id="types" class="holder">
 			<h2>Type</h2>
-			<input id="function" type="radio" name="type" value="" checked/><label for="function">Function</label>
-			<input id="polar" type="radio" name="type" value="polar"/><label for="polar">Polar</label>
-			<input id="parametric" type="radio" name="type" value="parametric"/><label for="parametric">Parametric</label>
+			<center>
+				<input id="function" type="radio" name="type" value="" checked/><label for="function">Function</label>
+				<input id="polar" type="radio" name="type" value="polar"/><label for="polar">Polar</label>
+				<input id="parametric" type="radio" name="type" value="parametric"/><label for="parametric">Parametric</label>
+			</center>
 		</div>
-		<div id="ranges">
+		<div id="ranges" class="holder">
 			<h2>Ranges</h2>
-			<div>
-				X <input type="text" id="xRangeFrom" class="range"/> <input type="text" id="xRangeTo" class="range"/>
-			</div>
-			<div>
-				Y <input type="text" id="yRangeFrom" class="range"/> <input type="text" id="yRangeTo" class="range"/>
-			</div>
+			<table>
+				<tr>
+					<td style="padding-right: 30px">X</td>
+					<td>Min</td>
+					<td><input type="text" id="xRangeFrom" class="range"/></td>
+					<td>Max</td>
+					<td><input type="text" id="xRangeTo" class="range"/></td>
+				</tr>
+				<tr>
+					<td style="padding-right: 30px">Y</td>
+					<td>Min</td>
+					<td><input type="text" id="yRangeFrom" class="range"/></td>
+					<td>Max</td>
+					<td><input type="text" id="yRangeTo" class="range"/></td>
+				</tr>
+			</table>
 		</div>
 
 		<input type="submit" id='ready' value="Go" style="float:right" />
