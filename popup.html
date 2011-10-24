@@ -1,6 +1,11 @@
 <style>
-	html {
-		height: 300px;
+	html, body {
+		height:390px;
+	}
+
+	body {
+		margin:0px;
+		padding:0px;
 	}
 
 	h2 {
@@ -26,6 +31,14 @@
 		padding:10px;
 		margin:10px;
 	}
+	.toclear {
+		clear: both;
+	}
+	#footer {
+		font-size:10px;
+		margin-top:10px;
+		float: right;
+	}
 </style>
 
 <div id="container">
@@ -33,7 +46,9 @@
 		<div id="functions" class="holder">
 			<h2>Functions</h2>
 		</div>
+		<center>
 		<input type="button" id='addFunction' value="Add function" />
+		</center>
 		<div id="types" class="holder">
 			<h2>Type</h2>
 			<center>
@@ -62,9 +77,13 @@
 			</table>
 		</div>
 
-		<input type="submit" id='ready' value="Go" style="float:right" />
+		<input type="submit" id='ready' value="Plot" style="float:right" />
 		<input type="button" id='clear' value="Clear" style="float:left" />
 	</form>
+	<div class="toclear"></div>
+	<div id="footer">
+		A Google Chrome extension by <a href="http://blog.dreasgrech.com" target="_blank">Andreas Grech</a>.
+	</div>
 </div>
 
 <script>
@@ -81,6 +100,7 @@
 
 	var mainUrl = "http://www.wolframalpha.com/input/?i=",
 	axes = ["x", "y"],
+	functionSerializeSeperator = "#-#",
 	toArray = function (el) {
 		return Array.prototype.slice.call(el);
 	},
@@ -159,10 +179,10 @@
 		}
 		fullUrl = constructUrl(functions, ranges);
 
-		chrome.tabs.create({'url': fullUrl}, function(tab) { });
+		chrome.tabs.create({'url': fullUrl});
 	}, saveData = function () {
 		var ranges = getRanges();
-		localStorage["functions"] = getFunctions().join("#-#");
+		localStorage["functions"] = getFunctions().join(functionSerializeSeperator);
 		axes.iterate(function (axis) {
 			localStorage[axis + "RangeFrom"] = document.getElementById(axis + "RangeFrom").value;
 			localStorage[axis + "RangeTo"] = document.getElementById(axis + "RangeTo").value;
@@ -170,7 +190,7 @@
 	}, loadData = function () {
 		var functions = localStorage["functions"];
 		if (functions) {
-			functions.split("#-#").iterate(function (f) {
+			functions.split(functionSerializeSeperator).iterate(function (f) {
 				addFunction(f);
 			});
 		} else { // if there are no saved functions, just add an empty first one
