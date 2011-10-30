@@ -1,234 +1,53 @@
-<style>
-	html, body {
-		height:390px;
-		background-color:#fafdff;
-	}
-
-	body {
-		margin:0px;
-		padding:0px;
-	}
-
-	h2 {
-		font-size: 18px;
-		margin:0px;
-		margin-bottom:10px;
-	}
-
-	#container {
-		margin:10px;
-	}
-
-	.function {
-		width: 300px;
-	}
-	.range {
-		width: 80px;
-	}
-	.holder {
-		width: 300px;
-		border:1px solid #CCC;
-		border-radius: 15px;
-		padding:10px;
-		margin:10px;
-		background-color:#f2f2f2;
-	}
-	.toclear {
-		clear: both;
-	}
-	#footer {
-		font-size:10px;
-		margin-top:10px;
-		float: right;
-	}
-	#ready {
-		font-weight:bold;
-	}
-</style>
-
-<div id="container">
-	<form id="form" method="get">
-		<div id="functions" class="holder">
-			<h2>Functions</h2>
-		</div>
-		<center>
-		<input type="button" id='addFunction' value="Add function" />
-		</center>
-		<div id="types" class="holder">
-			<h2>Type</h2>
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="main.css" />
+</head>
+<body>
+	<script src="main.js"></script>
+	<div id="container">
+		<form id="form" method="get">
+			<div id="functions" class="holder">
+				<h2>Functions</h2>
+			</div>
 			<center>
-				<input id="function" type="radio" name="type" value="" checked/><label for="function">Function</label>
-				<input id="polar" type="radio" name="type" value="polar"/><label for="polar">Polar</label>
-				<input id="parametric" type="radio" name="type" value="parametric"/><label for="parametric">Parametric</label>
+			<input type="button" id='addFunction' value="Add function" />
 			</center>
-		</div>
-		<div id="ranges" class="holder">
-			<h2>Ranges</h2>
-			<table>
-				<tr>
-					<td style="padding-right: 30px">X</td>
-					<td>Min</td>
-					<td><input type="text" id="xRangeFrom" class="range"/></td>
-					<td>Max</td>
-					<td><input type="text" id="xRangeTo" class="range"/></td>
-				</tr>
-				<tr>
-					<td style="padding-right: 30px">Y</td>
-					<td>Min</td>
-					<td><input type="text" id="yRangeFrom" class="range"/></td>
-					<td>Max</td>
-					<td><input type="text" id="yRangeTo" class="range"/></td>
-				</tr>
-			</table>
-		</div>
+			<div id="types" class="holder">
+				<h2>Type</h2>
+				<center>
+					<input id="function" type="radio" name="type" value="" checked/><label for="function">Function</label>
+					<input id="polar" type="radio" name="type" value="polar"/><label for="polar">Polar</label>
+					<input id="parametric" type="radio" name="type" value="parametric"/><label for="parametric">Parametric</label>
+				</center>
+			</div>
+			<div id="ranges" class="holder">
+				<h2>Ranges</h2>
+				<table>
+					<tr>
+						<td style="padding-right: 30px">X</td>
+						<td>Min</td>
+						<td><input type="text" id="xRangeFrom" class="range"/></td>
+						<td>Max</td>
+						<td><input type="text" id="xRangeTo" class="range"/></td>
+					</tr>
+					<tr>
+						<td style="padding-right: 30px">Y</td>
+						<td>Min</td>
+						<td><input type="text" id="yRangeFrom" class="range"/></td>
+						<td>Max</td>
+						<td><input type="text" id="yRangeTo" class="range"/></td>
+					</tr>
+				</table>
+			</div>
 
-		<input type="submit" id='ready' value="Plot" style="float:right" />
-		<input type="button" id='clear' value="Clear" style="float:left" />
-	</form>
-	<div class="toclear"></div>
-	<div id="footer">
-		A Google Chrome extension by <a href="http://blog.dreasgrech.com" target="_blank">Andreas Grech</a>.
+			<input type="submit" id='ready' value="Plot"/>
+			<input type="button" id='clear' value="Clear"/>
+		</form>
+		<div class="toclear"></div>
+		<div id="footer">
+			A Google Chrome extension by <a href="http://blog.dreasgrech.com" target="_blank">Andreas Grech</a>.
+		</div>
 	</div>
-</div>
-
-<script>
-	Array.prototype.iterate || (Array.prototype.iterate = function (callback, ignore) {
-	  var i = 0, j = this.length;
-	    for (; i < j; ++i) {
-		if (ignore && ignore(this[i], i)) {
-		  continue;
-		} 
-		
-		callback(this[i], i);
-	    }
-	});
-
-	var mainUrl = "http://www.wolframalpha.com/input/?i=",
-	axes = ["x", "y"],
-	functionSerializeSeperator = "#-#",
-	toArray = function (el) {
-		return Array.prototype.slice.call(el);
-	},
-	typesHolder = document.getElementById('types'),
-	functionsHolder = document.getElementById('functions'),
-	addFunction = function (f) {
-		var holder = document.createElement('div'), input = document.createElement('input');
-		input.classList.add("function");
-		input.type = "text";
-		input.onkeyup = saveData;
-		if (f) {
-			input.value = f;
-		}
-
-		holder.appendChild(input);
-		functions.appendChild(holder);
-		input.focus();
-	}, getType = function () {
-		var selectedType;
-		toArray(typesHolder.getElementsByTagName("input")).iterate(function (radio) {
-			if (radio.checked) {
-				selectedType = radio.value
-			}
-		});
-		return selectedType;
-	}, getFunctions = function () {
-		var functions = [];
-		toArray(functionsHolder.childNodes).iterate(function(functionHolder) {
-			var value;
-			if (functionHolder.nodeName !== "DIV") {
-				return;
-			}
-			value = functionHolder.getElementsByTagName("input")[0].value;
-			if (value) {
-				functions.push(value);
-			}
-		});
-
-		return functions;
-	}, getRanges = function () {
-		var ranges = {}, limits = ["From", "To"];
-		axes.iterate(function (axis) {
-			var axisLimits = {};
-			limits.iterate(function (limit) {
-				var inputtedAxisLimit = document.getElementById(axis + "Range" + limit);
-				axisLimits[limit] = inputtedAxisLimit.value || "";
-			});
-
-			if (axisLimits["From"] && axisLimits["To"]) {
-				ranges[axis] = axisLimits;
-				ranges[axis].serialize = function () {
-					return "{" + axis + ", " + axisLimits["From"] + ", " + axisLimits["To"] + "}";
-				};
-			}
-		});
-		return ranges;
-	}, constructUrl = function (functions, ranges) {
-		var plotParameter = "Plot[", 
-		serializedFunctions = functions.join(", "),
-		serializedRanges = [];
-
-		axes.iterate(function (axis) {
-			if (!ranges[axis]) {
-				return;
-			}
-			serializedRanges.push(ranges[axis].serialize());
-		});
-		serializedRanges = serializedRanges.join(", ");
-
-		return mainUrl + encodeURIComponent(getType() + " Plot[" + serializedFunctions + (serializedRanges ? ", " + serializedRanges : "") + "]");
-	}, ready = function (e) {
-		e.preventDefault();
-		var functions = getFunctions(), ranges = getRanges(), fullUrl;
-		if (!functions.length) {
-			return;
-		}
-		fullUrl = constructUrl(functions, ranges);
-
-		chrome.tabs.create({'url': fullUrl});
-	}, saveData = function () {
-		var ranges = getRanges();
-		localStorage["functions"] = getFunctions().join(functionSerializeSeperator);
-		axes.iterate(function (axis) {
-			localStorage[axis + "RangeFrom"] = document.getElementById(axis + "RangeFrom").value;
-			localStorage[axis + "RangeTo"] = document.getElementById(axis + "RangeTo").value;
-		});
-	}, loadData = function () {
-		var functions = localStorage["functions"];
-		if (functions) {
-			functions.split(functionSerializeSeperator).iterate(function (f) {
-				addFunction(f);
-			});
-		} else { // if there are no saved functions, just add an empty first one
-			addFunction();
-		}
-		axes.iterate(function (axis) {
-			document.getElementById(axis + "RangeFrom").value = localStorage[axis + "RangeFrom"] || "";
-			document.getElementById(axis + "RangeTo").value = localStorage[axis + "RangeTo"] || "";
-		});
-	}, clear = function () {
-		axes.iterate(function(axis) {
-			document.getElementById(axis + "RangeFrom").value = "";
-			document.getElementById(axis + "RangeTo").value = "";
-		});
-		toArray(document.getElementsByClassName('function')).iterate(function (f) {
-			functionsHolder.removeChild(f.parentNode);
-		});
-
-		addFunction();
-		saveData();
-	};
-
-	document.getElementById('ready').onclick = ready;
-
-	document.getElementById('addFunction').onclick = function () {
-		addFunction();
-	};
-
-	toArray(document.getElementsByTagName("input")).iterate(function (input) {
-		input.onkeyup = saveData;
-	});
-
-	document.getElementById('clear').onclick = clear;
-
-	loadData();
-</script>
+</body>
+</html>
